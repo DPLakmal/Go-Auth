@@ -1,0 +1,93 @@
+<main class="dashboard-page">
+  <header class="topbar">
+    <div class="brand">
+      <span><svg lucideShieldCheck size="24" aria-hidden="true"></svg></span>
+      <div>
+        <p>Go Auth</p>
+        <strong>JWT session console</strong>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" class="icon-action" aria-label="Refresh current user" (click)="reloadProfile()">
+        <svg lucideRefreshCw size="19" aria-hidden="true"></svg>
+      </button>
+      <button type="button" class="logout-button" [disabled]="isLoggingOut()" (click)="logout()">
+        @if (isLoggingOut()) {
+          <svg class="spin" lucideLoaderCircle size="18" aria-hidden="true"></svg>
+        } @else {
+          <svg lucideLogOut size="18" aria-hidden="true"></svg>
+        }
+        <span>Logout</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="summary">
+    <div>
+      <p class="eyebrow">Current user</p>
+      <h1>{{ user()?.name || 'Verifying session' }}</h1>
+      <p class="lede">
+        This route is protected by the auth guard and calls <code>GET /api/v1/users/me</code> with the active bearer token.
+      </p>
+    </div>
+    <div class="status-pill" [class.warning]="errorMessage()">
+      @if (errorMessage()) {
+        <svg lucideTriangleAlert size="18" aria-hidden="true"></svg>
+        <span>Needs attention</span>
+      } @else if (isLoading()) {
+        <svg class="spin" lucideLoaderCircle size="18" aria-hidden="true"></svg>
+        <span>Checking</span>
+      } @else {
+        <svg lucideBadgeCheck size="18" aria-hidden="true"></svg>
+        <span>Authenticated</span>
+      }
+    </div>
+  </section>
+
+  @if (errorMessage()) {
+    <section class="notice">
+      <svg lucideTriangleAlert size="20" aria-hidden="true"></svg>
+      <p>{{ errorMessage() }}</p>
+    </section>
+  }
+
+  <section class="content-grid">
+    <article class="profile-card">
+      <div class="card-icon"><svg lucideUser size="22" aria-hidden="true"></svg></div>
+      <h2>Profile</h2>
+      <dl>
+        <div>
+          <dt>User ID</dt>
+          <dd>{{ user()?.id || 'Not loaded' }}</dd>
+        </div>
+        <div>
+          <dt>Name</dt>
+          <dd>{{ user()?.name || 'Not loaded' }}</dd>
+        </div>
+        <div>
+          <dt>Email</dt>
+          <dd>{{ user()?.email || 'Not loaded' }}</dd>
+        </div>
+      </dl>
+    </article>
+
+    <article class="profile-card">
+      <div class="card-icon"><svg lucideServer size="22" aria-hidden="true"></svg></div>
+      <h2>Token lifecycle</h2>
+      <dl>
+        <div>
+          <dt>Access token</dt>
+          <dd>Bearer header, 15 minute TTL</dd>
+        </div>
+        <div>
+          <dt>Refresh token</dt>
+          <dd>Rotated on refresh and logout-aware</dd>
+        </div>
+        <div>
+          <dt>Created</dt>
+          <dd>{{ user()?.created_at ? (user()?.created_at | date: 'medium') : 'Not loaded' }}</dd>
+        </div>
+      </dl>
+    </article>
+  </section>
+</main>
