@@ -22,15 +22,20 @@ export class AuthService {
 
   readonly user = this.userSignal.asReadonly();
   readonly isAuthenticated = computed(() => this.tokenStore.hasSession());
+  private readonly jsonOptions = {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
 
   login(payload: LoginPayload): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/login`, payload).pipe(
+    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/login`, payload, this.jsonOptions).pipe(
       tap((response) => this.acceptSession(response.user, response.tokens))
     );
   }
 
   register(payload: RegisterPayload): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/register`, payload).pipe(
+    return this.http.post<AuthResponse>(`${this.baseUrl}/auth/register`, payload, this.jsonOptions).pipe(
       tap((response) => this.acceptSession(response.user, response.tokens))
     );
   }
@@ -43,7 +48,11 @@ export class AuthService {
     }
 
     return this.http
-      .post<RefreshResponse>(`${this.baseUrl}/auth/refresh`, { refresh_token: refreshToken })
+      .post<RefreshResponse>(
+        `${this.baseUrl}/auth/refresh`,
+        { refresh_token: refreshToken },
+        this.jsonOptions
+      )
       .pipe(tap((response) => this.tokenStore.setTokens(response.tokens)));
   }
 
@@ -71,10 +80,12 @@ export class AuthService {
       return of(void 0);
     }
 
-    return this.http.post<void>(`${this.baseUrl}/auth/logout`, { refresh_token: refreshToken }).pipe(
-      catchError(() => of(void 0)),
-      tap(() => this.endSession())
-    );
+    return this.http
+      .post<void>(`${this.baseUrl}/auth/logout`, { refresh_token: refreshToken }, this.jsonOptions)
+      .pipe(
+        catchError(() => of(void 0)),
+        tap(() => this.endSession())
+      );
   }
 
   endSession(): void {

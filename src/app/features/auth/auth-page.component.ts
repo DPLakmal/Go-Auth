@@ -55,7 +55,7 @@ export class AuthPageComponent {
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.minLength(2), Validators.maxLength(100)]],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]]
+    password: ['', [Validators.required]]
   });
 
   setMode(mode: AuthMode): void {
@@ -67,7 +67,11 @@ export class AuthPageComponent {
         ? [Validators.required, Validators.minLength(2), Validators.maxLength(100)]
         : [Validators.minLength(2), Validators.maxLength(100)]
     );
+    this.form.controls.password.setValidators(
+      mode === 'register' ? [Validators.required, Validators.minLength(8)] : [Validators.required]
+    );
     this.form.controls.name.updateValueAndValidity();
+    this.form.controls.password.updateValueAndValidity();
   }
 
   submit(): void {
@@ -80,10 +84,12 @@ export class AuthPageComponent {
 
     this.isSubmitting.set(true);
     const { name, email, password } = this.form.getRawValue();
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = password.trim();
     const request =
       this.mode() === 'register'
-        ? this.auth.register({ name, email, password })
-        : this.auth.login({ email, password });
+        ? this.auth.register({ name: name.trim(), email: normalizedEmail, password: normalizedPassword })
+        : this.auth.login({ email: normalizedEmail, password: normalizedPassword });
 
     request.subscribe({
       next: () => {

@@ -14,15 +14,19 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const accessToken = tokenStore.accessToken();
   const isApiRequest = request.url.startsWith(environment.apiBaseUrl);
   const isRefreshRequest = request.url.endsWith('/auth/refresh');
+  const isPublicAuthRequest =
+    request.url.endsWith('/auth/login') ||
+    request.url.endsWith('/auth/register') ||
+    isRefreshRequest;
 
   const authorizedRequest =
-    isApiRequest && accessToken
+    isApiRequest && accessToken && !isPublicAuthRequest
       ? request.clone({ setHeaders: { Authorization: `Bearer ${accessToken}` } })
       : request;
 
   return next(authorizedRequest).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (!isApiRequest || isRefreshRequest || error.status !== 401 || !tokenStore.refreshToken()) {
+      if (!isApiRequest || isPublicAuthRequest || error.status !== 401 || !tokenStore.refreshToken()) {
         return throwError(() => error);
       }
 

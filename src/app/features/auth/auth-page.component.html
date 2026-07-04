@@ -87,7 +87,9 @@
           </button>
         </div>
         @if (form.controls.password.touched && form.controls.password.invalid) {
-          <small>Password must be at least 8 characters.</small>
+          <small>
+            {{ mode() === 'register' ? 'Password must be at least 8 characters.' : 'Password is required.' }}
+          </small>
         }
       </label>
 
